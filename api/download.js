@@ -1,9 +1,9 @@
-// Este é o nosso "proxy" de download.
+// Este é o nosso "proxy" de download e visualização.
 const { google } = require('googleapis');
 
 module.exports = async (req, res) => {
-    // Pega o ID do ficheiro do link (ex: /api/download?fileId=...)
-    const { fileId } = req.query;
+    // Pega o ID do ficheiro e a ação desejada (view ou download)
+    const { fileId, action } = req.query;
 
     if (!fileId) {
         return res.status(400).send('O ID do ficheiro é obrigatório.');
@@ -25,8 +25,12 @@ module.exports = async (req, res) => {
         });
         const fileName = fileMetadata.data.name;
 
-        // Define os cabeçalhos para forçar o download no navegador
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        // **NOVA LÓGICA AQUI**
+        // Define se o ficheiro deve ser visualizado no navegador ('inline') ou baixado ('attachment')
+        const disposition = action === 'view' ? 'inline' : 'attachment';
+
+        // Define os cabeçalhos para o navegador
+        res.setHeader('Content-Disposition', `${disposition}; filename="${fileName}"`);
         res.setHeader('Content-Type', 'application/pdf');
 
         // Pede o conteúdo do ficheiro como um stream (fluxo de dados)
@@ -39,7 +43,7 @@ module.exports = async (req, res) => {
         driveResponse.data.pipe(res);
 
     } catch (error) {
-        console.error('Erro ao baixar o ficheiro:', error);
-        res.status(500).send('Ocorreu um erro ao tentar baixar o ficheiro.');
+        console.error('Erro ao processar o ficheiro:', error);
+        res.status(500).send('Ocorreu um erro ao tentar processar o ficheiro.');
     }
 };
