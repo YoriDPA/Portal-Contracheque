@@ -1,0 +1,9 @@
+{
+  "name": "portal-contracheque",
+  "version": "1.0.0",
+  "description": "API para o portal de contracheques",
+  "main": "index.js",
+  "dependencies": {
+    "googleapis": "^105.0.0"
+  }
+}
