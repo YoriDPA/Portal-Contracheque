@@ -18,9 +18,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <h1 class="text-xl font-bold text-indigo-600">Portal do Funcionário</h1>
-                <a href="./login.html" class="bg-indigo-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-600">
-                    Sair
-                </a>
+                <div class="flex items-center">
+                    <span id="welcomeMessage" class="text-sm text-gray-600 mr-4">Carregando...</span>
+                    <button id="logoutButton" class="bg-indigo-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-600">
+                        Sair
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -29,44 +32,76 @@
         <div class="px-4 py-6 sm:px-0">
             <div class="bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Meus Contracheques</h2>
-                <div class="space-y-4">
                 
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <div>
-                            <p class="font-semibold text-gray-700">Junho / 2024</p>
-                            <p class="text-xs text-gray-500">Referência: 06/2024</p>
-                        </div>
-                        <a href="#" onclick="alert('Iniciando o download... (simulação)')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                            <span>Baixar PDF</span>
-                        </a>
-                    </div>
-
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <div>
-                            <p class="font-semibold text-gray-700">Maio / 2024</p>
-                            <p class="text-xs text-gray-500">Referência: 05/2024</p>
-                        </div>
-                        <a href="#" onclick="alert('Iniciando o download... (simulação)')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                            <span>Baixar PDF</span>
-                        </a>
-                    </div>
-
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <div>
-                            <p class="font-semibold text-gray-700">Abril / 2024</p>
-                            <p class="text-xs text-gray-500">Referência: 04/2024</p>
-                        </div>
-                        <a href="#" onclick="alert('Iniciando o download... (simulação)')" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                            <span>Baixar PDF</span>
-                        </a>
-                    </div>
+                <!-- O conteúdo será inserido aqui dinamicamente -->
+                <div id="payslip-list" class="space-y-4">
+                    <p class="text-center text-gray-500">A carregar contracheques...</p>
                 </div>
             </div>
         </div>
     </main>
 
+    <script>
+        // --- Lógica do Portal (NOVO E CORRIGIDO) ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const employeeDataString = sessionStorage.getItem('employeeData');
+            
+            // Se não houver dados, o usuário não fez login. Redireciona para a página inicial.
+            if (!employeeDataString) {
+                window.location.href = './index.html';
+                return;
+            }
+
+            const employeeData = JSON.parse(employeeDataString);
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const payslipList = document.getElementById('payslip-list');
+
+            // Personaliza a mensagem de boas-vindas
+            welcomeMessage.textContent = `Olá, ${employeeData.employeeName || 'Funcionário'}!`;
+
+            // Limpa a lista antes de preencher
+            payslipList.innerHTML = '';
+
+            if (employeeData.files && employeeData.files.length > 0) {
+                // Se houver arquivos, cria um item para cada um
+                employeeData.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition';
+                    
+                    // Extrai Mês e Ano do nome do arquivo (ex: MATRICULA_ANO_MES.pdf)
+                    const parts = file.name.replace('.pdf', '').split('_');
+                    const year = parts[1] || 'Ano desconhecido';
+                    const monthNumber = parseInt(parts[2] || 0, 10);
+                    const monthNames = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                    const monthName = monthNames[monthNumber] || 'Mês desconhecido';
+
+                    fileItem.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-gray-700">${monthName} / ${year}</p>
+                            <p class="text-xs text-gray-500">Arquivo: ${file.name}</p>
+                        </div>
+                        <a href="${file.downloadLink}" target="_blank" rel="noopener noreferrer" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            <span>Baixar PDF</span>
+                        </a>
+                    `;
+                    payslipList.appendChild(fileItem);
+                });
+            } else {
+                // Se não houver arquivos
+                payslipList.innerHTML = '<p class="text-center text-gray-500">Nenhum contracheque encontrado para esta matrícula.</p>';
+            }
+        });
+
+        // --- Lógica de Logout ---
+        const logoutButton = document.getElementById('logoutButton');
+        logoutButton.addEventListener('click', () => {
+            // Limpa os dados da sessão
+            sessionStorage.removeItem('employeeData');
+            // Redireciona para a página de login
+            window.location.href = './index.html';
+        });
+
+    </script>
 </body>
 </html>
