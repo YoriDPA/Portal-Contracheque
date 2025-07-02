@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - RH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-red-600">Painel Administrativo</h1>
+                <button class="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Gerenciar Funcionários</h2>
+                
+                <div class="border border-gray-200 p-4 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Adicionar Novo Funcionário</h3>
+                    <form class="space-y-4" onsubmit="event.preventDefault(); alert('Funcionário salvo com sucesso! (simulação)');">
+                        <div>
+                            <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                            <input type="text" id="nome" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="cpf" class="block text-sm font-medium text-gray-700">CPF</label>
+                            <input type="text" id="cpf" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="matricula" class="block text-sm font-medium text-gray-700">Matrícula</label>
+                            <input type="text" id="matricula" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+                            Salvar Funcionário
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Funcionários Cadastrados</h3>
+                    <ul class="space-y-2">
+                        <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md"><span>João da Silva</span> <span class="text-xs text-gray-500">Mat: 98765</span></li>
+                        <li class="flex justify-between items-center p-2 bg-gray-50 rounded-md"><span>Maria Oliveira</span> <span class="text-xs text-gray-500">Mat: 98766</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Adicionar Contracheque</h2>
+                
+                <form class="space-y-4 border border-gray-200 p-4 rounded-lg" onsubmit="event.preventDefault(); alert('Contracheque enviado com sucesso! (simulação)');">
+                    <div>
+                        <label for="select-funcionario" class="block text-sm font-medium text-gray-700">Selecione o Funcionário</label>
+                        <select id="select-funcionario" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option>João da Silva</option>
+                            <option>Maria Oliveira</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="mes" class="block text-sm font-medium text-gray-700">Mês</label>
+                            <select id="mes" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option>Junho</option>
+                                <option>Julho</option>
+                                <option>Agosto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="ano" class="block text-sm font-medium text-gray-700">Ano</label>
+                            <input type="number" id="ano" value="2024" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Arquivo do Contracheque (PDF)</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                        <span>Carregar um arquivo</span>
+                                        <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".pdf" required>
+                                    </label>
+                                    <p class="pl-1">ou arraste e solte</p>
+                                </div>
+                                <p class="text-xs text-gray-500">Apenas PDF</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                        Enviar Contracheque
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
