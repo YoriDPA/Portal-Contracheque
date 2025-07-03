@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sansa-serif; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -18,7 +18,16 @@
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
             
             <div class="text-center">
-                <h1 class="text-3xl font-bold text-gray-800">Bem-Vindo</h1>
+                <!-- =========== LOGO DA EMPRESA AQUI =========== -->
+                <img 
+                    id="company-logo"
+                    src="https://placehold.co/128x128/6366f1/ffffff?text=Sua+Logo" 
+                    alt="Logo da Empresa" 
+                    class="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
+                >
+                <!-- ============================================= -->
+
+                <h1 class="text-3xl font-bold text-gray-800">Acesso ao Portal</h1>
                 <p class="mt-2 text-sm text-gray-600">Insira suas credenciais para continuar.</p>
             </div>
 
@@ -41,7 +50,6 @@
                     </div>
                 </div>
 
-                <!-- Mensagens de erro e loading -->
                 <div id="message" class="text-center text-sm"></div>
 
                 <div>
@@ -66,56 +74,36 @@
             e.target.value = value;
         });
 
-        // --- Lógica de Login (VERSÃO DE DIAGNÓSTICO) ---
+        // --- Lógica de Login ---
         const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
         const submitButton = document.getElementById('submitButton');
 
         loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Impede o envio padrão do formulário
-            console.log('Formulário submetido, preventDefault chamado.');
+            event.preventDefault();
+            messageDiv.textContent = 'Verificando...';
+            messageDiv.className = 'text-center text-sm text-gray-600';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Aguarde...';
+
+            const cpf = document.getElementById('cpf').value;
+            const matricula = document.getElementById('matricula').value;
 
             try {
-                // Mostra mensagem de "carregando"
-                messageDiv.textContent = 'Verificando...';
-                messageDiv.className = 'text-center text-sm text-gray-600';
-                submitButton.disabled = true;
-                submitButton.textContent = 'Aguarde...';
-                console.log('Estado de loading ativado.');
-
-                const cpf = document.getElementById('cpf').value;
-                const matricula = document.getElementById('matricula').value;
-                console.log('Dados capturados:', { cpf, matricula });
-
-                console.log('A chamar a API em /api/login...');
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cpf, matricula }),
                 });
-                console.log('Resposta da API recebida:', response);
-
                 const data = await response.json();
-                console.log('Dados da resposta (JSON):', data);
-
-                if (response.ok) {
-                    console.log('Resposta OK. Login bem-sucedido.');
-                    messageDiv.textContent = 'Login bem-sucedido! Redirecionando...';
-                    messageDiv.className = 'text-center text-sm text-green-600';
-                    
-                    console.log('A guardar dados na sessionStorage...');
-                    sessionStorage.setItem('employeeData', JSON.stringify(data));
-                    
-                    console.log('A redirecionar para portal.html...');
-                    window.location.href = './portal.html';
-
-                } else {
-                    console.error('Resposta não OK. Erro do servidor:', data.message);
-                    throw new Error(data.message);
-                }
+                if (!response.ok) throw new Error(data.message);
+                
+                messageDiv.textContent = 'Login bem-sucedido! Redirecionando...';
+                messageDiv.className = 'text-center text-sm text-green-600';
+                sessionStorage.setItem('employeeData', JSON.stringify(data));
+                window.location.href = './portal.html';
 
             } catch (error) {
-                console.error('ERRO GERAL NO BLOCO CATCH:', error);
                 messageDiv.textContent = error.message || 'Erro ao tentar fazer login.';
                 messageDiv.className = 'text-center text-sm text-red-600';
                 submitButton.disabled = false;
