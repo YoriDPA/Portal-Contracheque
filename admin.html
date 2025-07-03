@@ -10,14 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Esconde o conteúdo principal por padrão */
         #main-content { display: none; }
     </style>
 </head>
 <body class="bg-gray-100">
 
     <nav class="bg-white shadow-md">
-        <div class="max-w-7axl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <h1 class="text-xl font-bold text-red-600">Painel Administrativo</h1>
                 <button id="logoutButton" class="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600" style="display: none;">
@@ -27,7 +26,6 @@
         </div>
     </nav>
 
-    <!-- Conteúdo Principal (escondido até o login) -->
     <main id="main-content" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
@@ -76,8 +74,29 @@
                             <option>A carregar...</option>
                         </select>
                     </div>
-                    <!-- Restante do formulário de upload (será implementado depois) -->
-                    <p class="text-center text-sm text-gray-400 p-8">A funcionalidade de upload será adicionada no próximo passo.</p>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="mes" class="block text-sm font-medium text-gray-700">Mês</label>
+                            <select id="mes" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="ano" class="block text-sm font-medium text-gray-700">Ano</label>
+                            <input type="number" id="ano" value="2025" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Ficheiro do Contracheque (PDF)</label>
+                        <input id="file-upload" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept=".pdf" required>
+                    </div>
+                    
+                    <div id="uploadMessage" class="text-sm text-center"></div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                        Enviar Contracheque
+                    </button>
                 </form>
             </div>
         </div>
@@ -85,19 +104,15 @@
 
     <script>
         // --- SCRIPT DO PAINEL ADMINISTRATIVO ---
-
         const mainContent = document.getElementById('main-content');
         const logoutButton = document.getElementById('logoutButton');
         let adminPassword = '';
 
-        // Função para carregar os funcionários
+        // Carregar funcionários
         async function loadEmployees() {
             try {
-                const response = await fetch('/api/employees', {
-                    headers: { 'Authorization': `Bearer ${adminPassword}` }
-                });
+                const response = await fetch('/api/employees', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
                 const data = await response.json();
-
                 if (!response.ok) throw new Error(data.message);
 
                 const employeeList = document.getElementById('employeeList');
@@ -105,17 +120,13 @@
                 employeeList.innerHTML = '';
                 employeeSelect.innerHTML = '<option value="">-- Selecione --</option>';
 
-                if (data.employees.length === 0) {
-                    employeeList.innerHTML = '<li>Nenhum funcionário encontrado.</li>';
-                } else {
+                if (data.employees.length > 0) {
                     data.employees.forEach(emp => {
-                        // Adiciona à lista
                         const listItem = document.createElement('li');
                         listItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
                         listItem.innerHTML = `<span>${emp.nome}</span> <span class="text-xs text-gray-500">Mat: ${emp.matricula}</span>`;
                         employeeList.appendChild(listItem);
 
-                        // Adiciona ao dropdown
                         const optionItem = document.createElement('option');
                         optionItem.value = emp.matricula;
                         optionItem.textContent = `${emp.nome} (Mat: ${emp.matricula})`;
@@ -123,12 +134,11 @@
                     });
                 }
             } catch (error) {
-                console.error('Erro ao carregar funcionários:', error);
                 alert(`Erro ao carregar funcionários: ${error.message}`);
             }
         }
 
-        // Função de Login do Admin
+        // Login do Admin
         function adminLogin() {
             const storedPassword = sessionStorage.getItem('adminPassword');
             if (storedPassword) {
@@ -144,54 +154,95 @@
                     mainContent.style.display = 'block';
                     logoutButton.style.display = 'block';
                     loadEmployees();
-                } else {
-                    alert('Acesso negado.');
                 }
             }
         }
         
-        // Logout do Admin
+        // Logout
         logoutButton.addEventListener('click', () => {
             sessionStorage.removeItem('adminPassword');
             window.location.reload();
         });
 
-        // Adicionar novo funcionário
-        const addEmployeeForm = document.getElementById('addEmployeeForm');
-        const addEmployeeMessage = document.getElementById('addEmployeeMessage');
-        addEmployeeForm.addEventListener('submit', async (e) => {
+        // Adicionar funcionário
+        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            addEmployeeMessage.textContent = 'A guardar...';
-            addEmployeeMessage.className = 'text-sm text-center text-gray-600';
-
+            const messageDiv = document.getElementById('addEmployeeMessage');
+            messageDiv.textContent = 'A guardar...';
             const newEmployee = {
                 nome: document.getElementById('nome').value,
                 cpf: document.getElementById('cpf').value,
                 matricula: document.getElementById('matricula').value,
             };
-
             try {
                 const response = await fetch('/api/employees', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminPassword}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
                     body: JSON.stringify(newEmployee)
                 });
                 const data = await response.json();
-
                 if (!response.ok) throw new Error(data.message);
-
-                addEmployeeMessage.textContent = data.message;
-                addEmployeeMessage.className = 'text-sm text-center text-green-600';
-                addEmployeeForm.reset();
-                loadEmployees(); // Recarrega a lista
+                messageDiv.textContent = data.message;
+                messageDiv.className = 'text-sm text-center text-green-600';
+                e.target.reset();
+                loadEmployees();
             } catch (error) {
-                console.error('Erro ao adicionar funcionário:', error);
-                addEmployeeMessage.textContent = `Erro: ${error.message}`;
-                addEmployeeMessage.className = 'text-sm text-center text-red-600';
+                messageDiv.textContent = `Erro: ${error.message}`;
+                messageDiv.className = 'text-sm text-center text-red-600';
             }
+        });
+
+        // Lógica de Upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('uploadMessage');
+            const submitButton = e.target.querySelector('button');
+            messageDiv.textContent = 'A carregar ficheiro...';
+            submitButton.disabled = true;
+
+            const matricula = document.getElementById('select-funcionario').value;
+            const ano = document.getElementById('ano').value;
+            const mes = document.getElementById('mes').value;
+            const fileInput = document.getElementById('file-upload');
+
+            if (!matricula || !fileInput.files[0]) {
+                messageDiv.textContent = 'Selecione um funcionário e um ficheiro.';
+                submitButton.disabled = false;
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file); // Lê o ficheiro como base64
+
+            reader.onload = async () => {
+                const fileData = reader.result;
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+                        body: JSON.stringify({
+                            matricula, ano, mes,
+                            fileData: fileData,
+                            fileType: file.type
+                        })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message);
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'text-sm text-center text-green-600';
+                    e.target.reset();
+                } catch (error) {
+                    messageDiv.textContent = `Erro: ${error.message}`;
+                    messageDiv.className = 'text-sm text-center text-red-600';
+                } finally {
+                    submitButton.disabled = false;
+                }
+            };
+            reader.onerror = () => {
+                messageDiv.textContent = 'Erro ao ler o ficheiro.';
+                submitButton.disabled = false;
+            };
         });
         
         // Máscara de CPF
@@ -205,9 +256,8 @@
             e.target.value = value;
         });
 
-        // Inicia o processo de login ao carregar a página
+        // Inicia o processo de login
         window.addEventListener('DOMContentLoaded', adminLogin);
-
     </script>
 </body>
 </html>
