@@ -1,4 +1,4 @@
-// api/upload.js - A nossa API para carregar contracheques
+// api/upload.js - A nossa API para carregar contracheques (com lógica de substituição)
 
 const { google } = require('googleapis');
 const { Readable } = require('stream');
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
         return res.status(200).end();
     }
 
-    // Segurança básica: verifica a senha de admin
+    // Segurança básica
     if (req.headers.authorization !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
         return res.status(401).json({ success: false, message: 'Acesso não autorizado.' });
     }
@@ -42,17 +42,32 @@ module.exports = async (req, res) => {
 
         const authClient = await getAuthClient();
         const drive = google.drive({ version: 'v3', auth: authClient });
+        const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
-        // Constrói o nome do ficheiro padrão: MATRICULA_ANO_MES.pdf
+        // Constrói o nome do ficheiro padrão
         const fileName = `${matricula}_${ano}_${mes.padStart(2, '0')}.pdf`;
-        
-        // Converte o ficheiro de base64 para um buffer
+
+        // **NOVA LÓGICA: Procurar se o ficheiro já existe**
+        const searchResponse = await drive.files.list({
+            q: `'${folderId}' in parents and name = '${fileName}' and trashed = false`,
+            fields: 'files(id)',
+        });
+
+        // Se o ficheiro existir, apaga-o primeiro
+        if (searchResponse.data.files.length > 0) {
+            const existingFileId = searchResponse.data.files[0].id;
+            await drive.files.delete({
+                fileId: existingFileId,
+            });
+        }
+
+        // **LÓGICA EXISTENTE: Carregar o novo ficheiro**
         const fileBuffer = Buffer.from(fileData.split(',')[1], 'base64');
         const fileStream = Readable.from(fileBuffer);
 
         const fileMetadata = {
             name: fileName,
-            parents: [process.env.GOOGLE_DRIVE_FOLDER_ID], // ID da sua pasta "Contracheques"
+            parents: [folderId],
         };
 
         const media = {
@@ -60,14 +75,13 @@ module.exports = async (req, res) => {
             body: fileStream,
         };
 
-        // Usa a API do Drive para criar o ficheiro
         await drive.files.create({
             resource: fileMetadata,
             media: media,
             fields: 'id',
         });
 
-        return res.status(200).json({ success: true, message: `Contracheque "${fileName}" carregado com sucesso!` });
+        return res.status(200).json({ success: true, message: `Contracheque "${fileName}" carregado/substituído com sucesso!` });
 
     } catch (error) {
         console.error('ERRO NA API DE UPLOAD:', error);
