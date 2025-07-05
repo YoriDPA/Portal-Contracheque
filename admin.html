@@ -3,84 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - RH</title>
+    <title>Painel Administrativo - Teste Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        #main-content, #edit-modal { display: none; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 p-8">
 
-    <!-- Barra de Navegação -->
-    <nav class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <h1 class="text-xl font-bold text-red-600">Painel Administrativo</h1>
-                <button id="logoutButton" class="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600" style="display: none;">
-                    Sair
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Conteúdo Principal -->
-    <main id="main-content" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-bold">Diagnóstico em Progresso...</h1>
-        <p>Se você está a ver esta mensagem, o HTML foi carregado.</p>
-    </main>
+    <div id="test-container" class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-red-600">Diagnóstico Final</h1>
+        <p class="mt-4">A aguardar a execução do script...</p>
+    </div>
 
     <script>
-        // --- SCRIPT DE DIAGNÓSTICO COM ALERTAS ---
         alert("Alerta 1: O script da página admin.html começou a ser executado.");
-
-        const mainContent = document.getElementById('main-content');
-        const logoutButton = document.getElementById('logoutButton');
-        let adminPassword = '';
 
         function checkAuth() {
             alert("Alerta 2: A função checkAuth() foi chamada.");
+            const testContainer = document.getElementById('test-container');
             const storedPassword = sessionStorage.getItem('adminPassword');
+            
             if (storedPassword) {
-                alert("Alerta 3: Senha encontrada na sessionStorage. A preparar para carregar funcionários.");
-                adminPassword = storedPassword;
-                mainContent.style.display = 'block'; // Mostra o conteúdo
-                logoutButton.style.display = 'block';
-                loadEmployees();
+                alert("Alerta 3: Senha encontrada na sessionStorage.");
+                // Em vez de chamar a API, vamos apenas mostrar uma mensagem de sucesso.
+                testContainer.innerHTML = `
+                    <h1 class="text-2xl font-bold text-green-600">SUCESSO!</h1>
+                    <p class="mt-4">A autenticação foi verificada com sucesso.</p>
+                    <p class="mt-2">O problema acontece no próximo passo, ao tentar carregar os dados dos funcionários.</p>
+                `;
+                alert("Alerta 4: A função checkAuth() foi concluída com sucesso.");
             } else {
                 alert("Alerta 3 (Falha): Nenhuma senha encontrada. A redirecionar para a página de login.");
                 window.location.href = './admin-login.html';
             }
         }
-
-        async function loadEmployees() {
-            alert("Alerta 4: A função loadEmployees() foi chamada.");
-            try {
-                alert("Alerta 5: A tentar chamar a API /api/employees...");
-                const response = await fetch('/api/employees', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
-                alert("Alerta 6: Resposta da API recebida. Status: " + response.status);
-
-                if (!response.ok) {
-                    throw new Error("A resposta da API não foi OK.");
-                }
-
-                const data = await response.json();
-                alert("Alerta 7: Dados JSON processados com sucesso. O sistema deveria funcionar agora.");
-                
-                // Se chegarmos aqui, o problema está resolvido. Restauramos a funcionalidade.
-                window.location.reload(); // Recarrega a página para usar o código original (que você irá colar no próximo passo)
-
-            } catch (error) {
-                alert("ERRO CRÍTICO em loadEmployees: " + error.message);
-                sessionStorage.removeItem('adminPassword');
-                window.location.href = './admin-login.html';
-            }
-        }
         
-        // Inicia a verificação de autenticação ao carregar a página
         window.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
