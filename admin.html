@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Esconde o conteúdo por padrão até a verificação */
         #main-content, #edit-modal { display: none; }
     </style>
 </head>
@@ -30,7 +29,6 @@
 
     <!-- Conteúdo Principal -->
     <main id="main-content" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- O conteúdo existente do painel (formulários, listas, etc.) permanece aqui -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Coluna 1: Gerir Funcionários -->
             <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
@@ -141,36 +139,52 @@
     </div>
 
     <script>
-        // --- SCRIPT DO PAINEL ADMINISTRATIVO ---
+        // --- SCRIPT DO PAINEL ADMINISTRATIVO (VERSÃO DE DIAGNÓSTICO) ---
         const mainContent = document.getElementById('main-content');
         const logoutButton = document.getElementById('logoutButton');
         const editModal = document.getElementById('edit-modal');
         let adminPassword = '';
         let employeesData = [];
 
-        // NOVA LÓGICA DE VERIFICAÇÃO
+        // LÓGICA DE VERIFICAÇÃO
         function checkAuth() {
+            console.log("1. A verificar autenticação (checkAuth)...");
             const storedPassword = sessionStorage.getItem('adminPassword');
             if (storedPassword) {
+                console.log("2. Senha encontrada na sessionStorage. A mostrar conteúdo e a chamar loadEmployees...");
                 adminPassword = storedPassword;
                 mainContent.style.display = 'block';
                 logoutButton.style.display = 'block';
                 loadEmployees();
             } else {
-                // Se não houver senha, redireciona para a nova página de login
+                console.log("2. Nenhuma senha encontrada. A redirecionar para admin-login.html...");
                 window.location.href = './admin-login.html';
             }
         }
 
         // Carregar funcionários
         async function loadEmployees() {
+            console.log("3. A iniciar loadEmployees...");
             try {
+                console.log("4. A chamar a API /api/employees...");
                 const response = await fetch('/api/employees', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
+                console.log("5. Resposta da API recebida:", response);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro do servidor: ${response.status} - ${errorText}`);
+                }
+
+                console.log("6. A processar a resposta JSON...");
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
+                console.log("7. Dados recebidos:", data);
+
+                if (!data.success) throw new Error(data.message);
 
                 employeesData = data.employees;
+                console.log("8. Dados dos funcionários guardados. Total:", employeesData.length);
                 renderEmployeeList(employeesData);
+                console.log("9. Lista de funcionários renderizada.");
 
                 const employeeSelect = document.getElementById('select-funcionario');
                 employeeSelect.innerHTML = '<option value="">-- Selecione --</option>';
@@ -182,10 +196,12 @@
                         employeeSelect.appendChild(optionItem);
                     });
                 }
+                console.log("10. Dropdown de funcionários preenchido.");
             } catch (error) {
-                alert(`Erro ao carregar funcionários: ${error.message}`);
-                sessionStorage.removeItem('adminPassword'); // Limpa a senha inválida
-                window.location.href = './admin-login.html'; // Redireciona se houver erro
+                console.error("ERRO GERAL no bloco catch de loadEmployees:", error);
+                alert(`Erro crítico ao carregar funcionários: ${error.message}`);
+                sessionStorage.removeItem('adminPassword');
+                window.location.href = './admin-login.html';
             }
         }
 
@@ -223,7 +239,6 @@
             renderEmployeeList(filteredEmployees);
         });
 
-        // (Restante do código JS existente, sem alterações)
         const payslipManagementDiv = document.getElementById('payslip-management');
         const payslipListAdmin = document.getElementById('payslipListAdmin');
         const employeeSelect = document.getElementById('select-funcionario');
