@@ -1,4 +1,4 @@
-// api/admin-auth.js - API para autenticar o administrador
+// api/admin-auth.js - API para autenticar o administrador (VERSÃO DE DIAGNÓSTICO)
 
 module.exports = async (req, res) => {
     // Configurações de CORS
@@ -17,16 +17,26 @@ module.exports = async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        // --- LOGS DE DIAGNÓSTICO ---
+        console.log("--- Início do Pedido de Autenticação de Admin ---");
+        console.log("Recebido do formulário - Utilizador:", username);
+        console.log("Recebido do formulário - Senha:", password);
+
         // Pega as credenciais das variáveis de ambiente no Vercel
         const adminUser = process.env.ADMIN_USERNAME;
         const adminPass = process.env.ADMIN_PASSWORD;
 
+        // --- LOGS DE DIAGNÓSTICO ---
+        console.log("Variável no Vercel - ADMIN_USERNAME:", adminUser);
+        console.log("Variável no Vercel - ADMIN_PASSWORD:", adminPass);
+        // -----------------------------
+
         // Verifica se as credenciais correspondem
         if (username === adminUser && password === adminPass) {
-            // Login bem-sucedido
+            console.log("Resultado: SUCESSO. Credenciais correspondem.");
             res.status(200).json({ success: true, message: 'Autenticação bem-sucedida.' });
         } else {
-            // Credenciais inválidas
+            console.log("Resultado: FALHA. Credenciais não correspondem.");
             res.status(401).json({ success: false, message: 'Utilizador ou senha inválidos.' });
         }
     } catch (error) {
