@@ -1,4 +1,4 @@
-// api/announcements.js - API para gerir o Quadro de Avisos
+// api/announcements.js - API para gerir o Quadro de Avisos (com correção)
 
 const { google } = require('googleapis');
 
@@ -68,26 +68,17 @@ module.exports = async (req, res) => {
             return res.status(201).json({ success: true, message: 'Aviso publicado com sucesso!' });
         }
 
-        // DELETE: Apaga um aviso
+        // DELETE: Apaga um aviso (limpando o conteúdo da linha)
         if (req.method === 'DELETE') {
             const { rowIndex } = req.body;
             if (!rowIndex) {
                 return res.status(400).json({ success: false, message: 'Falta o identificador da linha para apagar.' });
             }
-            await sheets.spreadsheets.batchUpdate({
+            // **CORREÇÃO AQUI:** Limpa o conteúdo da linha em vez de a apagar, o que é mais seguro.
+            const rangeToClear = `${sheetName}!A${rowIndex}:C${rowIndex}`;
+            await sheets.spreadsheets.values.clear({
                 spreadsheetId,
-                resource: {
-                    requests: [{
-                        deleteDimension: {
-                            range: {
-                                sheetId: 1, // **IMPORTANTE**: Assumindo que "Avisos" é a SEGUNDA página (ID 1)
-                                dimension: 'ROWS',
-                                startIndex: rowIndex - 1,
-                                endIndex: rowIndex
-                            }
-                        }
-                    }]
-                }
+                range: rangeToClear,
             });
             return res.status(200).json({ success: true, message: 'Aviso apagado com sucesso!' });
         }
