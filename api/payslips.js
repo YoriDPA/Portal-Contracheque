@@ -1,4 +1,4 @@
-// api/payslips.js - A nossa API para gerir ficheiros de contracheque
+// api/payslips.js - API para gerir ficheiros de contracheque
 
 const { google } = require('googleapis');
 
@@ -6,7 +6,7 @@ const { google } = require('googleapis');
 async function getAuthClient() {
     const auth = new google.auth.GoogleAuth({
         credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
-        scopes: ['https://www.googleapis.com/auth/drive'], // Permissão total para o Drive
+        scopes: ['https://www.googleapis.com/auth/drive'],
     });
     return await auth.getClient();
 }
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
         const authClient = await getAuthClient();
         const drive = google.drive({ version: 'v3', auth: authClient });
 
-        // Se for um pedido GET, lista os ficheiros de um funcionário
+        // GET: Lista os ficheiros de um funcionário
         if (req.method === 'GET') {
             const { matricula } = req.query;
             if (!matricula) {
@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
             return res.status(200).json({ success: true, files: response.data.files });
         }
 
-        // Se for um pedido DELETE, apaga um ficheiro específico
+        // DELETE: Apaga um ficheiro específico
         if (req.method === 'DELETE') {
             const { fileId } = req.body;
             if (!fileId) {
