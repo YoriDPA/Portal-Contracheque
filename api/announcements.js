@@ -26,22 +26,25 @@ module.exports = async (req, res) => {
         const authClient = await getAuthClient();
         const sheets = google.sheets({ version: 'v4', auth: authClient });
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-        const sheetName = 'Avisos'; // O nome da nova página na sua planilha
+        const sheetName = 'Avisos';
 
         // GET: Retorna a lista de todos os avisos
         if (req.method === 'GET') {
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId,
-                range: `${sheetName}!A:C`, // Colunas: data, titulo, mensagem
+                range: `${sheetName}!A:C`,
             });
             const rows = response.data.values || [];
             if (rows.length > 1) {
-                const announcements = rows.slice(1).map((row, index) => ({
-                    date: row[0],
-                    title: row[1],
-                    message: row[2],
-                    rowIndex: index + 2
-                })).reverse(); // Mostra os mais recentes primeiro
+                const announcements = rows.slice(1)
+                    .map((row, index) => ({ // Mapeia primeiro para guardar o índice original
+                        date: row[0],
+                        title: row[1],
+                        message: row[2],
+                        rowIndex: index + 2
+                    }))
+                    .filter(ann => ann.title) // **CORREÇÃO AQUI**: Filtra as linhas que ficaram vazias
+                    .reverse(); // Mostra os mais recentes primeiro
                 return res.status(200).json({ success: true, announcements });
             }
             return res.status(200).json({ success: true, announcements: [] });
@@ -58,7 +61,7 @@ module.exports = async (req, res) => {
             if (!title || !message) {
                 return res.status(400).json({ success: false, message: 'Título e mensagem são obrigatórios.' });
             }
-            const date = new Date().toLocaleDateString('pt-BR'); // Data atual
+            const date = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
             await sheets.spreadsheets.values.append({
                 spreadsheetId,
                 range: `${sheetName}!A1`,
@@ -74,7 +77,6 @@ module.exports = async (req, res) => {
             if (!rowIndex) {
                 return res.status(400).json({ success: false, message: 'Falta o identificador da linha para apagar.' });
             }
-            // **CORREÇÃO AQUI:** Limpa o conteúdo da linha em vez de a apagar, o que é mais seguro.
             const rangeToClear = `${sheetName}!A${rowIndex}:C${rowIndex}`;
             await sheets.spreadsheets.values.clear({
                 spreadsheetId,
