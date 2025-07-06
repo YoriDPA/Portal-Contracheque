@@ -1,7 +1,7 @@
-// api/admin-auth.js - API para autenticar o administrador (VERSÃO DE DIAGNÓSTICO)
+// api/admin-auth.js - API to authenticate the administrator
 
 module.exports = async (req, res) => {
-    // Configurações de CORS
+    // CORS Settings
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,36 +11,26 @@ module.exports = async (req, res) => {
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Método não permitido.' });
+        return res.status(405).json({ message: 'Method Not Allowed.' });
     }
 
     try {
         const { username, password } = req.body;
 
-        // --- LOGS DE DIAGNÓSTICO ---
-        console.log("--- Início do Pedido de Autenticação de Admin ---");
-        console.log("Recebido do formulário - Utilizador:", username);
-        console.log("Recebido do formulário - Senha:", password);
-
-        // Pega as credenciais das variáveis de ambiente no Vercel
+        // Get credentials from Vercel Environment Variables
         const adminUser = process.env.ADMIN_USERNAME;
         const adminPass = process.env.ADMIN_PASSWORD;
 
-        // --- LOGS DE DIAGNÓSTICO ---
-        console.log("Variável no Vercel - ADMIN_USERNAME:", adminUser);
-        console.log("Variável no Vercel - ADMIN_PASSWORD:", adminPass);
-        // -----------------------------
-
-        // Verifica se as credenciais correspondem
+        // Check if credentials match
         if (username === adminUser && password === adminPass) {
-            console.log("Resultado: SUCESSO. Credenciais correspondem.");
-            res.status(200).json({ success: true, message: 'Autenticação bem-sucedida.' });
+            // Successful login
+            res.status(200).json({ success: true, message: 'Authentication successful.' });
         } else {
-            console.log("Resultado: FALHA. Credenciais não correspondem.");
-            res.status(401).json({ success: false, message: 'Utilizador ou senha inválidos.' });
+            // Invalid credentials
+            res.status(401).json({ success: false, message: 'Invalid username or password.' });
         }
     } catch (error) {
-        console.error('Erro na autenticação do admin:', error);
-        res.status(500).json({ success: false, message: 'Ocorreu um erro no servidor.' });
+        console.error('Error in admin authentication:', error);
+        res.status(500).json({ success: false, message: 'An error occurred on the server.' });
     }
 };
