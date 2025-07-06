@@ -3,44 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Teste Final</title>
+    <title>Login do Administrador</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-800">
 
-    <div id="test-container" class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold text-red-600">Diagnóstico Final</h1>
-        <p class="mt-4">A aguardar a execução do script...</p>
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+            
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-red-600">Acesso Restrito</h1>
+                <p class="mt-2 text-sm text-gray-600">Painel Administrativo do RH</p>
+            </div>
+
+            <form id="adminLoginForm" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Utilizador</label>
+                    <div class="mt-1">
+                        <input id="username" name="username" type="text" required autocomplete="off"
+                            class="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" required 
+                            class="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                    </div>
+                </div>
+
+                <div id="message" class="text-center text-sm"></div>
+
+                <div>
+                    <button id="submitButton" type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 ease-in-out">
+                        Entrar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        alert("Alerta 1: O script da página admin.html começou a ser executado.");
+        const loginForm = document.getElementById('adminLoginForm');
+        const messageDiv = document.getElementById('message');
+        const submitButton = document.getElementById('submitButton');
 
-        function checkAuth() {
-            alert("Alerta 2: A função checkAuth() foi chamada.");
-            const testContainer = document.getElementById('test-container');
-            const storedPassword = sessionStorage.getItem('adminPassword');
-            
-            if (storedPassword) {
-                alert("Alerta 3: Senha encontrada na sessionStorage.");
-                // Em vez de chamar a API, vamos apenas mostrar uma mensagem de sucesso.
-                testContainer.innerHTML = `
-                    <h1 class="text-2xl font-bold text-green-600">SUCESSO!</h1>
-                    <p class="mt-4">A autenticação foi verificada com sucesso.</p>
-                    <p class="mt-2">O problema acontece no próximo passo, ao tentar carregar os dados dos funcionários.</p>
-                `;
-                alert("Alerta 4: A função checkAuth() foi concluída com sucesso.");
-            } else {
-                alert("Alerta 3 (Falha): Nenhuma senha encontrada. A redirecionar para a página de login.");
-                window.location.href = './admin-login.html';
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            messageDiv.textContent = 'A verificar...';
+            submitButton.disabled = true;
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/admin-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    sessionStorage.setItem('adminPassword', password);
+                    window.location.href = './admin.html';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                messageDiv.textContent = error.message || 'Erro ao tentar fazer login.';
+                messageDiv.className = 'text-center text-sm text-red-600';
+                submitButton.disabled = false;
             }
-        }
-        
-        window.addEventListener('DOMContentLoaded', checkAuth);
+        });
     </script>
+
 </body>
 </html>
