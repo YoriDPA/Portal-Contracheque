@@ -74,7 +74,9 @@
                 const data = await response.json();
 
                 if (response.ok) {
+                    // Guarda a senha na memória da sessão
                     sessionStorage.setItem('adminPassword', password);
+                    // Redireciona para o painel principal
                     window.location.href = './admin.html';
                 } else {
                     throw new Error(data.message);
