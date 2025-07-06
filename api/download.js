@@ -1,4 +1,4 @@
-// Este é o nosso "proxy" de download e visualização.
+// api/download.js - Proxy seguro para baixar e visualizar ficheiros
 const { google } = require('googleapis');
 
 module.exports = async (req, res) => {
@@ -25,7 +25,6 @@ module.exports = async (req, res) => {
         });
         const fileName = fileMetadata.data.name;
 
-        // **NOVA LÓGICA AQUI**
         // Define se o ficheiro deve ser visualizado no navegador ('inline') ou baixado ('attachment')
         const disposition = action === 'view' ? 'inline' : 'attachment';
 
@@ -43,7 +42,7 @@ module.exports = async (req, res) => {
         driveResponse.data.pipe(res);
 
     } catch (error) {
-        console.error('Erro ao processar o ficheiro:', error);
-        res.status(500).send('Ocorreu um erro ao tentar processar o ficheiro.');
+        console.error('Erro ao baixar o ficheiro:', error);
+        res.status(500).send('Ocorreu um erro ao tentar baixar o ficheiro.');
     }
 };
