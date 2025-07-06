@@ -10,8 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        #main-content, #edit-modal, .tab-content { display: none; }
-        .tab-active { border-bottom-width: 2px; border-color: #ef4444; color: #ef4444; }
+        #main-content, #edit-modal { display: none; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -30,482 +29,55 @@
 
     <!-- Conteúdo Principal -->
     <main id="main-content" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Coluna 1: Gerir Funcionários -->
-            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
-                <h2 class="text-2xl font-bold text-gray-800">Gerir Funcionários</h2>
-                <div class="border border-gray-200 p-4 rounded-lg">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Adicionar Novo Funcionário</h3>
-                    <form id="addEmployeeForm" class="space-y-4">
-                        <div>
-                            <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                            <input type="text" id="nome" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="cpf" class="block text-sm font-medium text-gray-700">CPF (formato: 000.000.000-00)</label>
-                            <input type="text" id="cpf" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" maxlength="14">
-                        </div>
-                        <div>
-                            <label for="matricula" class="block text-sm font-medium text-gray-700">Matrícula</label>
-                            <input type="text" id="matricula" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div id="addEmployeeMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
-                            Salvar Funcionário
-                        </button>
-                    </form>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Funcionários Cadastrados</h3>
-                    <div class="mb-4">
-                        <input type="text" id="searchEmployeeInput" placeholder="Pesquisar por nome, CPF ou matrícula..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <ul id="employeeList" class="space-y-2 max-h-96 overflow-y-auto border p-2 rounded-md">
-                        <li class="text-center text-gray-500">A carregar...</li>
-                    </ul>
-                </div>
-            </div>
-            <!-- Coluna 2: Abas de Gestão -->
-            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
-                <!-- Abas -->
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button onclick="openTab(event, 'payslips')" id="defaultOpen" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Gerir Contracheques</button>
-                        <button onclick="openTab(event, 'announcements')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Gerir Avisos</button>
-                    </nav>
-                </div>
-
-                <!-- Conteúdo da Aba Contracheques -->
-                <div id="payslips" class="tab-content">
-                    <form id="uploadForm" class="space-y-4">
-                        <div>
-                            <label for="select-funcionario" class="block text-sm font-medium text-gray-700">Selecione o Funcionário</label>
-                            <select id="select-funcionario" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option>A carregar...</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="mes" class="block text-sm font-medium text-gray-700">Mês</label>
-                                <select id="mes" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="ano" class="block text-sm font-medium text-gray-700">Ano</label>
-                                <input type="number" id="ano" value="2025" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Ficheiro do Contracheque (PDF)</label>
-                            <input id="file-upload" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept=".pdf" required>
-                        </div>
-                        <div id="uploadMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
-                            Enviar Contracheque
-                        </button>
-                    </form>
-                    <div id="payslip-management" style="display: none;" class="mt-6">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-700">Contracheques Enviados</h3>
-                        <ul id="payslipListAdmin" class="space-y-2"></ul>
-                    </div>
-                </div>
-
-                <!-- Conteúdo da Aba Avisos -->
-                <div id="announcements" class="tab-content">
-                     <form id="addAnnouncementForm" class="space-y-4">
-                        <div>
-                            <label for="announcement-title" class="block text-sm font-medium text-gray-700">Título do Aviso</label>
-                            <input type="text" id="announcement-title" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="announcement-message" class="block text-sm font-medium text-gray-700">Mensagem</label>
-                            <textarea id="announcement-message" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></textarea>
-                        </div>
-                        <div id="addAnnouncementMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                            Publicar Aviso
-                        </button>
-                    </form>
-                    <div class="mt-6">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-700">Avisos Publicados</h3>
-                        <ul id="announcementList" class="space-y-2 max-h-64 overflow-y-auto border p-2 rounded-md">
-                            <li class="text-center text-gray-500">A carregar...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h1 class="text-2xl font-bold">Diagnóstico em Progresso...</h1>
+        <p>Se você está a ver esta mensagem, o HTML foi carregado.</p>
     </main>
 
-    <!-- Modal de Edição (sem alterações) -->
-    <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Editar Funcionário</h3>
-                <div class="mt-2 px-7 py-3">
-                    <form id="editEmployeeForm" class="space-y-4">
-                        <input type="hidden" id="edit-rowIndex">
-                        <div>
-                            <label for="edit-nome" class="text-left block text-sm font-medium text-gray-700">Nome Completo</label>
-                            <input type="text" id="edit-nome" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label for="edit-cpf" class="text-left block text-sm font-medium text-gray-700">CPF (não editável)</label>
-                            <input type="text" id="edit-cpf" readonly class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
-                        </div>
-                        <div>
-                            <label for="edit-matricula" class="text-left block text-sm font-medium text-gray-700">Matrícula</label>
-                            <input type="text" id="edit-matricula" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div id="editEmployeeMessage" class="text-sm text-center"></div>
-                    </form>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="saveEditButton" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700">
-                        Salvar Alterações
-                    </button>
-                    <button id="closeModalButton" class="mt-2 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // --- SCRIPT DO PAINEL ADMINISTRATIVO ---
+        // --- SCRIPT DE DIAGNÓSTICO COM ALERTAS ---
+        alert("Alerta 1: O script da página admin.html começou a ser executado.");
+
         const mainContent = document.getElementById('main-content');
         const logoutButton = document.getElementById('logoutButton');
-        const editModal = document.getElementById('edit-modal');
         let adminPassword = '';
-        let employeesData = [];
 
-        // --- LÓGICA DAS ABAS ---
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab-button");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" tab-active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " tab-active";
-
-            if (tabName === 'announcements') {
-                loadAnnouncements();
-            }
-        }
-        document.getElementById("defaultOpen").click();
-
-        // --- LÓGICA DE GESTÃO DE AVISOS ---
-        async function loadAnnouncements() {
-            const announcementList = document.getElementById('announcementList');
-            announcementList.innerHTML = '<li>A carregar...</li>';
-            try {
-                const response = await fetch('/api/announcements');
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-
-                announcementList.innerHTML = '';
-                if (data.announcements.length > 0) {
-                    data.announcements.forEach(ann => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'p-2 bg-gray-50 rounded-md border-l-4 border-blue-500';
-                        listItem.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-bold">${ann.title}</p>
-                                    <p class="text-sm mt-1">${ann.message}</p>
-                                    <p class="text-xs text-gray-400 mt-2">Publicado em: ${ann.date}</p>
-                                </div>
-                                <button onclick="deleteAnnouncement(${ann.rowIndex}, '${ann.title}')" class="text-red-500 hover:text-red-800 text-xs ml-4">Apagar</button>
-                            </div>
-                        `;
-                        announcementList.appendChild(listItem);
-                    });
-                } else {
-                    announcementList.innerHTML = '<li>Nenhum aviso publicado.</li>';
-                }
-            } catch (error) {
-                announcementList.innerHTML = `<li>Erro ao carregar avisos: ${error.message}</li>`;
-            }
-        }
-
-        document.getElementById('addAnnouncementForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const messageDiv = document.getElementById('addAnnouncementMessage');
-            messageDiv.textContent = 'A publicar...';
-            const newAnnouncement = {
-                title: document.getElementById('announcement-title').value,
-                message: document.getElementById('announcement-message').value,
-            };
-            try {
-                const response = await fetch('/api/announcements', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(newAnnouncement)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                e.target.reset();
-                loadAnnouncements();
-            } catch (error) {
-                messageDiv.textContent = `Erro: ${error.message}`;
-                messageDiv.className = 'text-sm text-center text-red-600';
-            }
-        });
-
-        async function deleteAnnouncement(rowIndex, title) {
-            if (confirm(`Tem a certeza que quer apagar o aviso "${title}"?`)) {
-                try {
-                    const response = await fetch('/api/announcements', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ rowIndex })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadAnnouncements();
-                } catch (error) {
-                    alert(`Erro ao apagar o aviso: ${error.message}`);
-                }
-            }
-        }
-
-
-        // --- LÓGICA EXISTENTE (sem alterações) ---
-        // (código de login, gestão de funcionários, upload, etc.)
         function checkAuth() {
+            alert("Alerta 2: A função checkAuth() foi chamada.");
             const storedPassword = sessionStorage.getItem('adminPassword');
             if (storedPassword) {
+                alert("Alerta 3: Senha encontrada na sessionStorage. A preparar para carregar funcionários.");
                 adminPassword = storedPassword;
                 mainContent.style.display = 'block';
                 logoutButton.style.display = 'block';
                 loadEmployees();
             } else {
+                alert("Alerta 3 (Falha): Nenhuma senha encontrada. A redirecionar para a página de login.");
                 window.location.href = './admin-login.html';
             }
         }
+
         async function loadEmployees() {
+            alert("Alerta 4: A função loadEmployees() foi chamada.");
             try {
+                alert("Alerta 5: A tentar chamar a API /api/employees...");
                 const response = await fetch('/api/employees', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                employeesData = data.employees;
-                renderEmployeeList(employeesData);
-                const employeeSelect = document.getElementById('select-funcionario');
-                employeeSelect.innerHTML = '<option value="">-- Selecione --</option>';
-                if (employeesData.length > 0) {
-                    employeesData.forEach(emp => {
-                        const optionItem = document.createElement('option');
-                        optionItem.value = emp.matricula;
-                        optionItem.textContent = `${emp.nome} (Mat: ${emp.matricula})`;
-                        employeeSelect.appendChild(optionItem);
-                    });
+                alert("Alerta 6: Resposta da API recebida. Status: " + response.status);
+
+                if (!response.ok) {
+                    throw new Error("A resposta da API não foi OK.");
                 }
+
+                const data = await response.json();
+                alert("Alerta 7: Dados JSON processados com sucesso. O sistema deveria funcionar agora. Por favor, substitua este ficheiro de teste pelo código final.");
+                
             } catch (error) {
-                alert(`Erro ao carregar funcionários: ${error.message}`);
+                alert("ERRO CRÍTICO em loadEmployees: " + error.message);
                 sessionStorage.removeItem('adminPassword');
                 window.location.href = './admin-login.html';
             }
         }
-        function renderEmployeeList(employeesToRender) {
-            const employeeList = document.getElementById('employeeList');
-            employeeList.innerHTML = '';
-            if (employeesToRender.length > 0) {
-                employeesToRender.forEach(emp => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
-                    listItem.innerHTML = `<div><span class="font-medium">${emp.nome}</span><span class="block text-xs text-gray-500">CPF: ${emp.cpf} | Mat: ${emp.matricula}</span></div><div class="flex space-x-2"><button onclick="openEditModal('${emp.cpf}')" class="text-blue-600 hover:text-blue-900 text-xs">Editar</button><button onclick="deleteEmployee('${emp.cpf}')" class="text-red-600 hover:text-red-900 text-xs">Apagar</button></div>`;
-                    employeeList.appendChild(listItem);
-                });
-            } else {
-                employeeList.innerHTML = '<li class="text-center text-gray-500">Nenhum funcionário encontrado.</li>';
-            }
-        }
-        document.getElementById('searchEmployeeInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredEmployees = employeesData.filter(emp => emp.nome.toLowerCase().includes(searchTerm) || emp.cpf.includes(searchTerm) || emp.matricula.includes(searchTerm));
-            renderEmployeeList(filteredEmployees);
-        });
-        const payslipManagementDiv = document.getElementById('payslip-management');
-        const payslipListAdmin = document.getElementById('payslipListAdmin');
-        const employeeSelect = document.getElementById('select-funcionario');
-        async function loadPayslips(matricula) {
-            if (!matricula) { payslipManagementDiv.style.display = 'none'; return; }
-            payslipManagementDiv.style.display = 'block';
-            payslipListAdmin.innerHTML = '<li>A carregar...</li>';
-            try {
-                const response = await fetch(`/api/payslips?matricula=${matricula}`, { headers: { 'Authorization': `Bearer ${adminPassword}` } });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                payslipListAdmin.innerHTML = '';
-                if (data.files.length > 0) {
-                    data.files.forEach(file => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
-                        listItem.innerHTML = `<span>${file.name}</span><button onclick="deletePayslip('${file.id}', '${file.name}')" class="text-red-600 hover:text-red-900 text-xs">Apagar</button>`;
-                        payslipListAdmin.appendChild(listItem);
-                    });
-                } else {
-                    payslipListAdmin.innerHTML = '<li>Nenhum contracheque encontrado para este funcionário.</li>';
-                }
-            } catch (error) { payslipListAdmin.innerHTML = `<li>Erro ao carregar ficheiros: ${error.message}</li>`; }
-        }
-        async function deletePayslip(fileId, fileName) {
-            if (confirm(`Tem a certeza que quer apagar o ficheiro ${fileName}?`)) {
-                try {
-                    const response = await fetch('/api/payslips', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ fileId })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadPayslips(employeeSelect.value);
-                } catch (error) { alert(`Erro ao apagar o ficheiro: ${error.message}`); }
-            }
-        }
-        employeeSelect.addEventListener('change', (e) => loadPayslips(e.target.value));
-        function openEditModal(cpf) {
-            const employee = employeesData.find(emp => emp.cpf === cpf);
-            if (employee) {
-                document.getElementById('edit-rowIndex').value = employee.rowIndex;
-                document.getElementById('edit-nome').value = employee.nome;
-                document.getElementById('edit-cpf').value = employee.cpf;
-                document.getElementById('edit-matricula').value = employee.matricula;
-                editModal.style.display = 'block';
-            }
-        }
-        function closeModal() { editModal.style.display = 'none'; }
-        async function saveEmployeeChanges() {
-            const messageDiv = document.getElementById('editEmployeeMessage');
-            messageDiv.textContent = 'A guardar...';
-            const updatedEmployee = {
-                rowIndex: document.getElementById('edit-rowIndex').value,
-                nome: document.getElementById('edit-nome').value,
-                matricula: document.getElementById('edit-matricula').value,
-            };
-            try {
-                const response = await fetch('/api/employees', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(updatedEmployee)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                setTimeout(() => { closeModal(); loadEmployees(); }, 1500);
-            } catch (error) {
-                 messageDiv.textContent = `Erro: ${error.message}`;
-                 messageDiv.className = 'text-sm text-center text-red-600';
-            }
-        }
-        async function deleteEmployee(cpf) {
-            const employee = employeesData.find(emp => emp.cpf === cpf);
-            if (employee && confirm(`Tem a certeza que quer apagar o funcionário ${employee.nome}? Esta ação não pode ser desfeita.`)) {
-                try {
-                    const response = await fetch('/api/employees', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ rowIndex: employee.rowIndex })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadEmployees();
-                } catch (error) { alert(`Erro ao apagar funcionário: ${error.message}`); }
-            }
-        }
-        document.getElementById('saveEditButton').addEventListener('click', saveEmployeeChanges);
-        document.getElementById('closeModalButton').addEventListener('click', closeModal);
-        logoutButton.addEventListener('click', () => {
-            sessionStorage.removeItem('adminPassword');
-            window.location.href = './admin-login.html';
-        });
-        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const messageDiv = document.getElementById('addEmployeeMessage');
-            messageDiv.textContent = 'A guardar...';
-            const newEmployee = {
-                nome: document.getElementById('nome').value,
-                cpf: document.getElementById('cpf').value,
-                matricula: document.getElementById('matricula').value,
-            };
-            try {
-                const response = await fetch('/api/employees', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(newEmployee)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                e.target.reset();
-                loadEmployees();
-            } catch (error) { messageDiv.textContent = `Erro: ${error.message}`; messageDiv.className = 'text-sm text-center text-red-600'; }
-        });
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const messageDiv = document.getElementById('uploadMessage');
-            const submitButton = e.target.querySelector('button');
-            messageDiv.textContent = 'A carregar ficheiro...';
-            submitButton.disabled = true;
-            const matricula = document.getElementById('select-funcionario').value;
-            const ano = document.getElementById('ano').value;
-            const mes = document.getElementById('mes').value;
-            const fileInput = document.getElementById('file-upload');
-            if (!matricula || !fileInput.files[0]) {
-                messageDiv.textContent = 'Selecione um funcionário e um ficheiro.';
-                submitButton.disabled = false;
-                return;
-            }
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const fileData = reader.result;
-                try {
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ matricula, ano, mes, fileData: fileData, fileType: file.type })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    messageDiv.textContent = data.message;
-                    messageDiv.className = 'text-sm text-center text-green-600';
-                    e.target.reset();
-                    loadPayslips(matricula);
-                } catch (error) {
-                    messageDiv.textContent = `Erro: ${error.message}`;
-                    messageDiv.className = 'text-sm text-center text-red-600';
-                } finally { submitButton.disabled = false; }
-            };
-            reader.onerror = () => {
-                messageDiv.textContent = 'Erro ao ler o ficheiro.';
-                submitButton.disabled = false;
-            };
-        });
-        const cpfInput = document.getElementById('cpf');
-        cpfInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            if (value.length > 9) value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-            else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-            else if (value.length > 3) value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-            e.target.value = value;
-        });
+        
+        // Inicia a verificação de autenticação ao carregar a página
         window.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
