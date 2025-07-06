@@ -1,4 +1,4 @@
-// api/upload.js - A nossa API para carregar contracheques (com lógica de substituição)
+// api/upload.js - API para carregar contracheques (com lógica de substituição)
 
 const { google } = require('googleapis');
 const { Readable } = require('stream');
@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
         // Constrói o nome do ficheiro padrão
         const fileName = `${matricula}_${ano}_${mes.padStart(2, '0')}.pdf`;
 
-        // **NOVA LÓGICA: Procurar se o ficheiro já existe**
+        // Procura se o ficheiro já existe
         const searchResponse = await drive.files.list({
             q: `'${folderId}' in parents and name = '${fileName}' and trashed = false`,
             fields: 'files(id)',
@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
             });
         }
 
-        // **LÓGICA EXISTENTE: Carregar o novo ficheiro**
+        // Carrega o novo ficheiro
         const fileBuffer = Buffer.from(fileData.split(',')[1], 'base64');
         const fileStream = Readable.from(fileBuffer);
 
