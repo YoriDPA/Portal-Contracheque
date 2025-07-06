@@ -19,7 +19,7 @@
             <div class="flex items-center justify-between h-16">
                 <h1 class="text-xl font-bold text-indigo-600">Portal do Funcionário</h1>
                 <div class="flex items-center">
-                    <span id="welcomeMessage" class="text-sm text-gray-600 mr-4">Carregando...</span>
+                    <span id="welcomeMessage" class="text-sm text-gray-600 mr-4"></span>
                     <button id="logoutButton" class="bg-indigo-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-600">
                         Sair
                     </button>
@@ -29,19 +29,31 @@
     </nav>
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 py-6 sm:px-0">
-            <div class="bg-white p-8 rounded-xl shadow-lg">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Meus Contracheques</h2>
-                
-                <div id="payslip-list" class="space-y-4">
-                    <p class="text-center text-gray-500">A carregar contracheques...</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Coluna de Contracheques -->
+            <div class="md:col-span-2">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Meus Contracheques</h2>
+                    <div id="payslip-list" class="space-y-4">
+                        <p class="text-center text-gray-500">A carregar...</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Coluna de Avisos -->
+            <div class="md:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Quadro de Avisos</h2>
+                    <ul id="announcement-list-portal" class="space-y-4 max-h-[60vh] overflow-y-auto">
+                       <p class="text-center text-gray-500">A carregar avisos...</p>
+                    </ul>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        // --- Lógica do Portal ---
+        async function loadPortalData() {
             const employeeDataString = sessionStorage.getItem('employeeData');
             
             if (!employeeDataString) {
@@ -50,52 +62,69 @@
             }
 
             const employeeData = JSON.parse(employeeDataString);
-            const welcomeMessage = document.getElementById('welcomeMessage');
+            document.getElementById('welcomeMessage').textContent = `Olá, ${employeeData.employeeName || 'Funcionário'}!`;
+            
+            // Carregar Contracheques
             const payslipList = document.getElementById('payslip-list');
-
-            welcomeMessage.textContent = `Olá, ${employeeData.employeeName || 'Funcionário'}!`;
             payslipList.innerHTML = '';
-
             if (employeeData.files && employeeData.files.length > 0) {
                 employeeData.files.forEach(file => {
                     const fileItem = document.createElement('div');
                     fileItem.className = 'flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition';
-                    
                     const parts = file.name.replace('.pdf', '').split('_');
                     const year = parts[1] || 'Ano';
                     const monthNumber = parseInt(parts[2] || 0, 10);
                     const monthNames = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
                     const monthName = monthNames[monthNumber] || 'Mês';
-
-                    // **MUDANÇA AQUI: Adicionado um grupo de botões (Visualizar e Baixar)**
                     fileItem.innerHTML = `
                         <div>
                             <p class="font-semibold text-gray-700">${monthName} / ${year}</p>
                             <p class="text-xs text-gray-500">Arquivo: ${file.name}</p>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <a href="/api/download?fileId=${file.id}&action=view" target="_blank" rel="noopener noreferrer" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
-                                <span>Visualizar</span>
-                            </a>
-                            <a href="/api/download?fileId=${file.id}" target="_blank" rel="noopener noreferrer" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                <span>Baixar</span>
-                            </a>
+                            <a href="/api/download?fileId=${file.id}&action=view" target="_blank" rel="noopener noreferrer" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Visualizar</a>
+                            <a href="/api/download?fileId=${file.id}" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Baixar</a>
                         </div>
                     `;
                     payslipList.appendChild(fileItem);
                 });
             } else {
-                payslipList.innerHTML = '<p class="text-center text-gray-500">Nenhum contracheque encontrado para esta matrícula.</p>';
+                payslipList.innerHTML = '<p class="text-center text-gray-500">Nenhum contracheque encontrado.</p>';
             }
-        });
 
-        const logoutButton = document.getElementById('logoutButton');
-        logoutButton.addEventListener('click', () => {
+            // Carregar Avisos
+            const announcementList = document.getElementById('announcement-list-portal');
+            try {
+                const response = await fetch('/api/announcements');
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                
+                announcementList.innerHTML = '';
+                if(data.announcements && data.announcements.length > 0) {
+                    data.announcements.forEach(ann => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500';
+                        listItem.innerHTML = `
+                            <p class="font-bold text-blue-800">${ann.title}</p>
+                            <p class="text-sm mt-1 text-gray-700">${ann.message}</p>
+                            <p class="text-xs text-gray-400 mt-2">Publicado em: ${ann.date}</p>
+                        `;
+                        announcementList.appendChild(listItem);
+                    });
+                } else {
+                    announcementList.innerHTML = '<p class="text-center text-gray-500">Nenhum aviso no momento.</p>';
+                }
+            } catch (error) {
+                announcementList.innerHTML = '<p class="text-center text-red-500">Não foi possível carregar os avisos.</p>';
+            }
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
             sessionStorage.removeItem('employeeData');
             window.location.href = './index.html';
         });
+
+        window.addEventListener('DOMContentLoaded', loadPortalData);
     </script>
 </body>
 </html>
