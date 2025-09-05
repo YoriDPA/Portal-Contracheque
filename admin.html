@@ -3,497 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - RH</title>
+    <title>Admin - Portal Contracheque</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        #main-content, #edit-modal, .tab-content { display: none; }
-        .tab-active { border-bottom-width: 2px; border-color: #ef4444; color: #ef4444; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .file-item:hover {
+            background-color: #f1f5f9;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 text-gray-800">
 
-    <!-- Barra de Navegação -->
-    <nav class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <h1 class="text-xl font-bold text-red-600">Painel Administrativo</h1>
-                <button id="logoutButton" class="bg-red-500 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-600" style="display: none;">
-                    Sair
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8">
+            <div class="flex flex-col items-center text-center mb-8">
+                <div class="bg-blue-100 text-blue-600 p-3 rounded-full mb-4">
+                    <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900">Portal do Administrador</h1>
+                <p class="text-gray-600 mt-2">Envie e gerencie os contracheques dos funcionários.</p>
+            </div>
+            
+            <div id="upload-section">
+                <p class="text-gray-600 mb-6 text-center">
+                  Faça o upload dos arquivos de contracheque em formato PDF. O nome de cada arquivo deve seguir um dos padrões:
+                  <br>
+                  <code class="bg-gray-200 text-sm p-1 rounded">MATRICULA_ANO_MES.pdf</code> (ex: 123_2025_07.pdf) ou
+                  <code class="bg-gray-200 text-sm p-1 rounded">MATRICULA.ANO.MES.pdf</code> (ex: 258.2025.09.pdf).
+                </p>
+
+                <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 bg-gray-50 transition">
+                    <input type="file" id="file-input" multiple accept=".pdf" class="hidden">
+                    <div class="flex flex-col items-center">
+                        <i data-lucide="file-up" class="w-12 h-12 text-gray-400 mb-3"></i>
+                        <p class="text-gray-700 font-medium">Arraste e solte os arquivos aqui</p>
+                        <p class="text-gray-500 text-sm mt-1">ou clique para selecionar</p>
+                    </div>
+                </div>
+
+                <div id="file-list" class="mt-6 space-y-2"></div>
+
+                <div class="mt-8 text-center">
+                    <button id="upload-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm" disabled>
+                        Enviar Arquivos
+                    </button>
+                </div>
+            </div>
+
+            <div id="loading-section" class="hidden text-center py-12">
+                <div class="loader mx-auto"></div>
+                <p id="loading-text" class="mt-4 text-lg font-medium text-gray-700">Enviando arquivos...</p>
+                <p id="progress-text" class="text-gray-500">0 de 0</p>
+            </div>
+
+            <div id="result-section" class="hidden text-center py-8">
+                <div id="result-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
+                    <!-- Icon will be inserted here -->
+                </div>
+                <h2 id="result-title" class="text-2xl font-bold"></h2>
+                <p id="result-message" class="mt-2 text-gray-600"></p>
+                <div id="error-details" class="mt-4 text-left bg-gray-100 p-4 rounded-md max-h-48 overflow-y-auto hidden">
+                  <p class="font-semibold mb-2">Arquivos que falharam:</p>
+                  <ul id="error-list" class="list-disc list-inside text-sm text-red-700"></ul>
+                </div>
+                <button id="reset-btn" class="mt-8 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                    Enviar Mais Arquivos
                 </button>
             </div>
-        </div>
-    </nav>
-
-    <!-- Conteúdo Principal -->
-    <main id="main-content" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Coluna 1: Gerir Funcionários -->
-            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
-                <h2 class="text-2xl font-bold text-gray-800">Gerir Funcionários</h2>
-                <div class="border border-gray-200 p-4 rounded-lg">
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Adicionar Novo Funcionário</h3>
-                    <form id="addEmployeeForm" class="space-y-4">
-                        <div>
-                            <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                            <input type="text" id="nome" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="cpf" class="block text-sm font-medium text-gray-700">CPF (formato: 000.000.000-00)</label>
-                            <input type="text" id="cpf" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" maxlength="14">
-                        </div>
-                        <div>
-                            <label for="matricula" class="block text-sm font-medium text-gray-700">Matrícula</label>
-                            <input type="text" id="matricula" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div id="addEmployeeMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
-                            Salvar Funcionário
-                        </button>
-                    </form>
-                </div>
-                <div>
-                    <h3 class="font-semibold text-lg mb-3 text-gray-700">Funcionários Cadastrados</h3>
-                    <div class="mb-4">
-                        <input type="text" id="searchEmployeeInput" placeholder="Pesquisar por nome, CPF ou matrícula..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <ul id="employeeList" class="space-y-2 max-h-96 overflow-y-auto border p-2 rounded-md">
-                        <li class="text-center text-gray-500">A carregar...</li>
-                    </ul>
-                </div>
-            </div>
-            <!-- Coluna 2: Abas de Gestão -->
-            <div class="bg-white p-6 rounded-xl shadow-lg space-y-6">
-                <!-- Abas -->
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button onclick="openTab(event, 'payslips')" id="defaultOpen" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Gerir Contracheques</button>
-                        <button onclick="openTab(event, 'announcements')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Gerir Avisos</button>
-                    </nav>
-                </div>
-
-                <!-- Conteúdo da Aba Contracheques -->
-                <div id="payslips" class="tab-content">
-                    <form id="uploadForm" class="space-y-4">
-                        <div>
-                            <label for="select-funcionario" class="block text-sm font-medium text-gray-700">Selecione o Funcionário</label>
-                            <select id="select-funcionario" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option>A carregar...</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="mes" class="block text-sm font-medium text-gray-700">Mês</label>
-                                <select id="mes" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="ano" class="block text-sm font-medium text-gray-700">Ano</label>
-                                <input type="number" id="ano" value="2025" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Ficheiro do Contracheque (PDF)</label>
-                            <input id="file-upload" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept=".pdf" required>
-                        </div>
-                        <div id="uploadMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
-                            Enviar Contracheque
-                        </button>
-                    </form>
-                    <div id="payslip-management" style="display: none;" class="mt-6">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-700">Contracheques Enviados</h3>
-                        <ul id="payslipListAdmin" class="space-y-2"></ul>
-                    </div>
-                </div>
-
-                <!-- Conteúdo da Aba Avisos -->
-                <div id="announcements" class="tab-content">
-                     <form id="addAnnouncementForm" class="space-y-4">
-                        <div>
-                            <label for="announcement-title" class="block text-sm font-medium text-gray-700">Título do Aviso</label>
-                            <input type="text" id="announcement-title" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="announcement-message" class="block text-sm font-medium text-gray-700">Mensagem</label>
-                            <textarea id="announcement-message" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></textarea>
-                        </div>
-                        <div id="addAnnouncementMessage" class="text-sm text-center"></div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                            Publicar Aviso
-                        </button>
-                    </form>
-                    <div class="mt-6">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-700">Avisos Publicados</h3>
-                        <ul id="announcementList" class="space-y-2 max-h-64 overflow-y-auto border p-2 rounded-md">
-                            <li class="text-center text-gray-500">A carregar...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal de Edição -->
-    <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Editar Funcionário</h3>
-                <div class="mt-2 px-7 py-3">
-                    <form id="editEmployeeForm" class="space-y-4">
-                        <input type="hidden" id="edit-rowIndex">
-                        <div>
-                            <label for="edit-nome" class="text-left block text-sm font-medium text-gray-700">Nome Completo</label>
-                            <input type="text" id="edit-nome" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label for="edit-cpf" class="text-left block text-sm font-medium text-gray-700">CPF (não editável)</label>
-                            <input type="text" id="edit-cpf" readonly class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
-                        </div>
-                        <div>
-                            <label for="edit-matricula" class="text-left block text-sm font-medium text-gray-700">Matrícula</label>
-                            <input type="text" id="edit-matricula" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div id="editEmployeeMessage" class="text-sm text-center"></div>
-                    </form>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="saveEditButton" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700">
-                        Salvar Alterações
-                    </button>
-                    <button id="closeModalButton" class="mt-2 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700">
-                        Cancelar
-                    </button>
-                </div>
+             <div class="mt-8 text-center border-t pt-4">
+                <a href="/admin-login.html" onclick="logout(event)" class="text-sm text-red-500 hover:text-red-700 font-medium">
+                    <i data-lucide="log-out" class="w-4 h-4 inline-block -mt-0.5"></i> Sair
+                </a>
             </div>
         </div>
     </div>
 
     <script>
-        const mainContent = document.getElementById('main-content');
-        const logoutButton = document.getElementById('logoutButton');
-        const editModal = document.getElementById('edit-modal');
-        let adminPassword = '';
-        let employeesData = [];
-
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab-button");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" tab-active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " tab-active";
-            if (tabName === 'announcements') {
-                loadAnnouncements();
-            }
+        lucide.createIcons();
+        
+        // Check for authentication
+        if (!sessionStorage.getItem('isAuthenticated')) {
+            window.location.href = '/admin-login.html';
         }
 
-        async function loadAnnouncements() {
-            const announcementList = document.getElementById('announcementList');
-            announcementList.innerHTML = '<li>A carregar...</li>';
-            try {
-                const response = await fetch('/api/announcements');
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                announcementList.innerHTML = '';
-                if (data.announcements.length > 0) {
-                    data.announcements.forEach(ann => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'p-2 bg-gray-50 rounded-md border-l-4 border-blue-500';
-                        listItem.innerHTML = `<div class="flex justify-between items-start"><div><p class="font-bold">${ann.title}</p><p class="text-sm mt-1">${ann.message}</p><p class="text-xs text-gray-400 mt-2">Publicado em: ${ann.date}</p></div><button onclick="deleteAnnouncement(${ann.rowIndex}, '${ann.title}')" class="text-red-500 hover:text-red-800 text-xs ml-4">Apagar</button></div>`;
-                        announcementList.appendChild(listItem);
-                    });
-                } else {
-                    announcementList.innerHTML = '<li>Nenhum aviso publicado.</li>';
-                }
-            } catch (error) {
-                announcementList.innerHTML = `<li>Erro ao carregar avisos: ${error.message}</li>`;
-            }
-        }
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const uploadBtn = document.getElementById('upload-btn');
 
-        document.getElementById('addAnnouncementForm').addEventListener('submit', async (e) => {
+        const uploadSection = document.getElementById('upload-section');
+        const loadingSection = document.getElementById('loading-section');
+        const resultSection = document.getElementById('result-section');
+        const resetBtn = document.getElementById('reset-btn');
+
+        let filesToUpload = [];
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            const messageDiv = document.getElementById('addAnnouncementMessage');
-            messageDiv.textContent = 'A publicar...';
-            const newAnnouncement = {
-                title: document.getElementById('announcement-title').value,
-                message: document.getElementById('announcement-message').value,
-            };
-            try {
-                const response = await fetch('/api/announcements', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(newAnnouncement)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                e.target.reset();
-                loadAnnouncements();
-            } catch (error) {
-                messageDiv.textContent = `Erro: ${error.message}`;
-                messageDiv.className = 'text-sm text-center text-red-600';
-            }
+            dropzone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            const newFiles = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+            addFiles(newFiles);
         });
 
-        async function deleteAnnouncement(rowIndex, title) {
-            if (confirm(`Tem a certeza que quer apagar o aviso "${title}"?`)) {
-                try {
-                    const response = await fetch('/api/announcements', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ rowIndex })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadAnnouncements();
-                } catch (error) {
-                    alert(`Erro ao apagar o aviso: ${error.message}`);
+        fileInput.addEventListener('change', (e) => {
+            const newFiles = Array.from(e.target.files);
+            addFiles(newFiles);
+            fileInput.value = ''; // Reset input to allow re-uploading the same file
+        });
+
+        function addFiles(newFiles) {
+            newFiles.forEach(file => {
+                if (!filesToUpload.some(f => f.name === file.name)) {
+                    filesToUpload.push(file);
                 }
-            }
+            });
+            renderFileList();
         }
 
-        function checkAuth() {
-            const storedPassword = sessionStorage.getItem('adminPassword');
-            if (storedPassword) {
-                adminPassword = storedPassword;
-                mainContent.style.display = 'block';
-                logoutButton.style.display = 'block';
-                loadEmployees();
+        function removeFile(fileName) {
+            filesToUpload = filesToUpload.filter(file => file.name !== fileName);
+            renderFileList();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            if (filesToUpload.length > 0) {
+                const header = document.createElement('h3');
+                header.className = 'text-lg font-semibold text-gray-800 mb-2';
+                header.textContent = `Arquivos para Enviar (${filesToUpload.length})`;
+                fileList.appendChild(header);
+
+                filesToUpload.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    const fileInfo = document.createElement('div');
+                    fileInfo.className = 'flex items-center space-x-3';
+
+                    const fileIcon = document.createElement('div');
+                    fileIcon.className = 'text-red-500';
+                    fileIcon.innerHTML = `<i data-lucide="file-text" class="w-5 h-5"></i>`;
+
+                    const fileText = document.createElement('span');
+                    fileText.className = 'text-gray-700 text-sm';
+                    fileText.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                    
+                    fileInfo.appendChild(fileIcon);
+                    fileInfo.appendChild(fileText);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'text-gray-400 hover:text-red-600';
+                    removeBtn.innerHTML = `<i data-lucide="x" class="w-5 h-5"></i>`;
+                    removeBtn.onclick = () => removeFile(file.name);
+
+                    fileItem.appendChild(fileInfo);
+                    fileItem.appendChild(removeBtn);
+                    fileList.appendChild(fileItem);
+                });
+                lucide.createIcons();
+                uploadBtn.disabled = false;
             } else {
-                window.location.href = './admin-login.html';
+                uploadBtn.disabled = true;
             }
         }
-        async function loadEmployees() {
+        
+        uploadBtn.addEventListener('click', async () => {
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+            
+            const totalFiles = filesToUpload.length;
+            document.getElementById('progress-text').textContent = `0 de ${totalFiles}`;
+            
+            const formData = new FormData();
+            filesToUpload.forEach((file) => {
+                formData.append('files', file);
+            });
+            
             try {
-                const response = await fetch('/api/employees', { headers: { 'Authorization': `Bearer ${adminPassword}` } });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                employeesData = data.employees;
-                renderEmployeeList(employeesData);
-                const employeeSelect = document.getElementById('select-funcionario');
-                employeeSelect.innerHTML = '<option value="">-- Selecione --</option>';
-                if (employeesData.length > 0) {
-                    employeesData.forEach(emp => {
-                        const optionItem = document.createElement('option');
-                        optionItem.value = emp.matricula;
-                        optionItem.textContent = `${emp.nome} (Mat: ${emp.matricula})`;
-                        employeeSelect.appendChild(optionItem);
-                    });
-                }
-            } catch (error) {
-                alert(`Erro ao carregar funcionários: ${error.message}`);
-                sessionStorage.removeItem('adminPassword');
-                window.location.href = './admin-login.html';
-            }
-        }
-        function renderEmployeeList(employeesToRender) {
-            const employeeList = document.getElementById('employeeList');
-            employeeList.innerHTML = '';
-            if (employeesToRender.length > 0) {
-                employeesToRender.forEach(emp => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
-                    listItem.innerHTML = `<div><span class="font-medium">${emp.nome}</span><span class="block text-xs text-gray-500">CPF: ${emp.cpf} | Mat: ${emp.matricula}</span></div><div class="flex space-x-2"><button onclick="openEditModal('${emp.cpf}')" class="text-blue-600 hover:text-blue-900 text-xs">Editar</button><button onclick="deleteEmployee('${emp.cpf}')" class="text-red-600 hover:text-red-900 text-xs">Apagar</button></div>`;
-                    employeeList.appendChild(listItem);
-                });
-            } else {
-                employeeList.innerHTML = '<li class="text-center text-gray-500">Nenhum funcionário encontrado.</li>';
-            }
-        }
-        document.getElementById('searchEmployeeInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredEmployees = employeesData.filter(emp => emp.nome.toLowerCase().includes(searchTerm) || emp.cpf.includes(searchTerm) || emp.matricula.includes(searchTerm));
-            renderEmployeeList(filteredEmployees);
-        });
-        const payslipManagementDiv = document.getElementById('payslip-management');
-        const payslipListAdmin = document.getElementById('payslipListAdmin');
-        const employeeSelect = document.getElementById('select-funcionario');
-        async function loadPayslips(matricula) {
-            if (!matricula) { payslipManagementDiv.style.display = 'none'; return; }
-            payslipManagementDiv.style.display = 'block';
-            payslipListAdmin.innerHTML = '<li>A carregar...</li>';
-            try {
-                const response = await fetch(`/api/payslips?matricula=${matricula}`, { headers: { 'Authorization': `Bearer ${adminPassword}` } });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                payslipListAdmin.innerHTML = '';
-                if (data.files.length > 0) {
-                    data.files.forEach(file => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
-                        listItem.innerHTML = `<span>${file.name}</span><button onclick="deletePayslip('${file.id}', '${file.name}')" class="text-red-600 hover:text-red-900 text-xs">Apagar</button>`;
-                        payslipListAdmin.appendChild(listItem);
-                    });
-                } else {
-                    payslipListAdmin.innerHTML = '<li>Nenhum contracheque encontrado para este funcionário.</li>';
-                }
-            } catch (error) { payslipListAdmin.innerHTML = `<li>Erro ao carregar ficheiros: ${error.message}</li>`; }
-        }
-        async function deletePayslip(fileId, fileName) {
-            if (confirm(`Tem a certeza que quer apagar o ficheiro ${fileName}?`)) {
-                try {
-                    const response = await fetch('/api/payslips', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ fileId })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadPayslips(employeeSelect.value);
-                } catch (error) { alert(`Erro ao apagar o ficheiro: ${error.message}`); }
-            }
-        }
-        employeeSelect.addEventListener('change', (e) => loadPayslips(e.target.value));
-        function openEditModal(cpf) {
-            const employee = employeesData.find(emp => emp.cpf === cpf);
-            if (employee) {
-                document.getElementById('edit-rowIndex').value = employee.rowIndex;
-                document.getElementById('edit-nome').value = employee.nome;
-                document.getElementById('edit-cpf').value = employee.cpf;
-                document.getElementById('edit-matricula').value = employee.matricula;
-                editModal.style.display = 'block';
-            }
-        }
-        function closeModal() { editModal.style.display = 'none'; }
-        async function saveEmployeeChanges() {
-            const messageDiv = document.getElementById('editEmployeeMessage');
-            messageDiv.textContent = 'A guardar...';
-            const updatedEmployee = {
-                rowIndex: document.getElementById('edit-rowIndex').value,
-                nome: document.getElementById('edit-nome').value,
-                matricula: document.getElementById('edit-matricula').value,
-            };
-            try {
-                const response = await fetch('/api/employees', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(updatedEmployee)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                setTimeout(() => { closeModal(); loadEmployees(); }, 1500);
-            } catch (error) {
-                 messageDiv.textContent = `Erro: ${error.message}`;
-                 messageDiv.className = 'text-sm text-center text-red-600';
-            }
-        }
-        async function deleteEmployee(cpf) {
-            const employee = employeesData.find(emp => emp.cpf === cpf);
-            if (employee && confirm(`Tem a certeza que quer apagar o funcionário ${employee.nome}? Esta ação não pode ser desfeita.`)) {
-                try {
-                    const response = await fetch('/api/employees', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ rowIndex: employee.rowIndex })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    alert(data.message);
-                    loadEmployees();
-                } catch (error) { alert(`Erro ao apagar funcionário: ${error.message}`); }
-            }
-        }
-        document.getElementById('saveEditButton').addEventListener('click', saveEmployeeChanges);
-        document.getElementById('closeModalButton').addEventListener('click', closeModal);
-        logoutButton.addEventListener('click', () => {
-            sessionStorage.removeItem('adminPassword');
-            window.location.href = './admin-login.html';
-        });
-        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const messageDiv = document.getElementById('addEmployeeMessage');
-            messageDiv.textContent = 'A guardar...';
-            const newEmployee = {
-                nome: document.getElementById('nome').value,
-                cpf: document.getElementById('cpf').value,
-                matricula: document.getElementById('matricula').value,
-            };
-            try {
-                const response = await fetch('/api/employees', {
+                const response = await fetch('/api/upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                    body: JSON.stringify(newEmployee)
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                    },
+                    body: formData,
                 });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message);
-                messageDiv.textContent = data.message;
-                messageDiv.className = 'text-sm text-center text-green-600';
-                e.target.reset();
-                loadEmployees();
-            } catch (error) { messageDiv.textContent = `Erro: ${error.message}`; messageDiv.className = 'text-sm text-center text-red-600'; }
-        });
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const messageDiv = document.getElementById('uploadMessage');
-            const submitButton = e.target.querySelector('button');
-            messageDiv.textContent = 'A carregar ficheiro...';
-            submitButton.disabled = true;
-            const matricula = document.getElementById('select-funcionario').value;
-            const ano = document.getElementById('ano').value;
-            const mes = document.getElementById('mes').value;
-            const fileInput = document.getElementById('file-upload');
-            if (!matricula || !fileInput.files[0]) {
-                messageDiv.textContent = 'Selecione um funcionário e um ficheiro.';
-                submitButton.disabled = false;
-                return;
-            }
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const fileData = reader.result;
-                try {
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                        body: JSON.stringify({ matricula, ano, mes, fileData: fileData, fileType: file.type })
+                
+                const result = await response.json();
+                
+                loadingSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+                
+                const resultIcon = document.getElementById('result-icon');
+                const resultTitle = document.getElementById('result-title');
+                const resultMessage = document.getElementById('result-message');
+                const errorDetails = document.getElementById('error-details');
+                const errorList = document.getElementById('error-list');
+
+                if (response.ok && result.errors.length === 0) {
+                    resultIcon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 bg-green-100 text-green-600';
+                    resultIcon.innerHTML = `<i data-lucide="check-circle-2" class="w-10 h-10"></i>`;
+                    resultTitle.textContent = "Sucesso!";
+                    resultMessage.textContent = `${result.successCount} arquivos foram enviados e processados com êxito.`;
+                    errorDetails.classList.add('hidden');
+                } else {
+                    resultIcon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 bg-yellow-100 text-yellow-600';
+                    resultIcon.innerHTML = `<i data-lucide="alert-triangle" class="w-10 h-10"></i>`;
+                    resultTitle.textContent = "Envio Parcialmente Concluído";
+                    resultMessage.textContent = `${result.successCount} de ${totalFiles} arquivos foram enviados. Alguns arquivos falharam.`;
+                    
+                    errorList.innerHTML = '';
+                    result.errors.forEach(error => {
+                        const li = document.createElement('li');
+                        li.textContent = `${error.file}: ${error.error}`;
+                        errorList.appendChild(li);
                     });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message);
-                    messageDiv.textContent = data.message;
-                    messageDiv.className = 'text-sm text-center text-green-600';
-                    e.target.reset();
-                    loadPayslips(matricula);
-                } catch (error) {
-                    messageDiv.textContent = `Erro: ${error.message}`;
-                    messageDiv.className = 'text-sm text-center text-red-600';
-                } finally { submitButton.disabled = false; }
-            };
-            reader.onerror = () => {
-                messageDiv.textContent = 'Erro ao ler o ficheiro.';
-                submitButton.disabled = false;
-            };
-        });
-        const cpfInput = document.getElementById('cpf');
-        cpfInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            if (value.length > 9) value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-            else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-            else if (value.length > 3) value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-            e.target.value = value;
+                    errorDetails.classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                loadingSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+
+                const resultIcon = document.getElementById('result-icon');
+                resultIcon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 bg-red-100 text-red-600';
+                resultIcon.innerHTML = `<i data-lucide="x-circle" class="w-10 h-10"></i>`;
+                document.getElementById('result-title').textContent = "Erro no Envio";
+                document.getElementById('result-message').textContent = "Ocorreu um erro inesperado ao tentar enviar os arquivos. Por favor, tente novamente.";
+                document.getElementById('error-details').classList.add('hidden');
+            } finally {
+                lucide.createIcons();
+            }
         });
         
-        // **CORREÇÃO AQUI:** Chama a função para abrir a aba padrão depois de o DOM estar carregado.
-        window.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            document.getElementById("defaultOpen").click();
+        resetBtn.addEventListener('click', () => {
+            filesToUpload = [];
+            renderFileList();
+            resultSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
         });
+
+        function logout(event) {
+            event.preventDefault();
+            sessionStorage.removeItem('isAuthenticated');
+            sessionStorage.removeItem('authToken');
+            window.location.href = '/admin-login.html';
+        }
     </script>
 </body>
 </html>
